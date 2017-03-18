@@ -36,3 +36,4 @@ dist/
 dist.zip
 build/
 config.env.production
+/.DS_Store

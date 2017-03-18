@@ -9,6 +9,7 @@ var fs = require('fs');
 var runSequence = require('run-sequence');
 var webpack = require('webpack-stream');
 
+
 // First we need to clean out the dist folder and remove the compiled zip file.
 gulp.task('clean', function(cb) {
   del('./dist');

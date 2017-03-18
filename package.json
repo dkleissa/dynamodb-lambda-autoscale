@@ -23,7 +23,9 @@
     "start": "node ./scripts/start.js",
     "debug": "node --inspect --debug-brk ./scripts/start.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "^1.6.3"
+  },
   "devDependencies": {
     "async": "^2.0.0",
     "aws-sdk": "2.6.9",

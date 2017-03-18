@@ -7,6 +7,8 @@ import CapacityCalculator from './CapacityCalculator';
 import { json, stats, log, invariant } from './Global';
 import type { UpdateTableRequest } from 'aws-sdk';
 
+var fetch = require('node-fetch');
+
 export default class App {
   _provisioner: Provisioner;
   _capacityCalculator: CapacityCalculator;
@@ -14,7 +16,10 @@ export default class App {
   constructor() {
     this._provisioner = new Provisioner();
     this._capacityCalculator = new CapacityCalculator();
+
+
   }
+
 
   async runAsync(event: any, context: any): Promise<void> {
     invariant(event != null, 'The argument \'event\' was null');
@@ -45,8 +50,25 @@ export default class App {
     }
 
     sw.end();
-    this._logMetrics(tableDetails);
 
+    //Log
+    let metric_str = this._logMetrics(tableDetails);
+
+    // If you are changing something notify slack
+    if (tableUpdateRequests.length > 0) {
+        let msg = JSON.stringify({
+        'text': metric_str,
+        'channel': 'dynamodb'
+      }, null, json.padding)
+
+      await fetch(process.env.SLACK_WEBHOOK_URL, { method: 'POST', body: msg})
+      .then(function(res) {
+          //return res.json();
+          log("worked1");
+      }).then(function(json) {
+          log("worked2");
+      });
+    }
     // Return an empty response
     if (context) {
       context.succeed(null);
@@ -182,7 +204,7 @@ export default class App {
     let tableUpdates = updateRequests != null ? { count: updateRequests.length } :
       undefined;
 
-    log(JSON.stringify({
+    let json_msg = JSON.stringify({
       'Index.handler': indexHandler,
       'DynamoDB.listTablesAsync': dynamoDBListTablesAsync,
       'DynamoDB.describeTableAsync': dynamoDBDescribeTableAsync,
@@ -191,6 +213,9 @@ export default class App {
       TableUpdates: tableUpdates,
       TotalProvisionedThroughput: totalProvisionedThroughput,
       TotalMonthlyEstimatedCost: totalMonthlyEstimatedCost,
-    }, null, json.padding));
+    }, null, 2)
+    log(json_msg)
+
+    return json_msg
   }
 }
